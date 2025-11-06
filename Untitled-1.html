@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sorry — Bati na tayo</title>
+  <style>
+    :root {
+      --bg: #c75583;
+      --card: #e5699d;
+      --accent: #ff6b9a;
+      --muted: #4b1b2f;
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+      --radius: 20px;
+      --maxw: 720px;
+      --gap: 18px;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--bg), #ffeef3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--muted);
+    }
+    .card {
+      width: 100%;
+      max-width: var(--maxw);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; color: var(--muted); }
+    p.lead { margin: 0 0 18px; color: #6b2b3b; }
+
+    .btn-row { display: flex; justify-content: center; align-items: center; gap: 16px; position: relative; }
+    button.btn {
+      padding: 14px 22px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      transition: transform 0.28s cubic-bezier(.2,.9,.2,1);
+    }
+    button.yes {
+      background: linear-gradient(180deg, #ff8aa6, #ff5a83);
+      color: white;
+      position: relative;
+      z-index: 1;
+    }
+    button.no {
+      background: linear-gradient(180deg, #fff, #ffeef2);
+      border: 2px solid #ffd7e1;
+      color: var(--muted);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button.no span.icon {
+      font-size: 18px;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 200px;
+      padding: 24px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fff, #fff6f9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hint { font-size: 13px; color: #985066; margin-top: 12px; }
+
+    .letter {
+      white-space: pre-wrap;
+      font-size: 16px;
+      line-height: 1.55;
+      color: #4b1b2f;
+      padding: 12px;
+      border-radius: 10px;
+      background: #f190b2;
+      border: 1px dashed #ffd7e1;
+    }
+
+    .controls { display: flex; justify-content: center; margin-top: 16px; }
+
+    .emoji {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: -40px;
+      font-size: 28px;
+      opacity: .9;
+      animation: fall 6s linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateX(-10px) translateY(-10vh); }
+      50% { transform: translateX(10px) translateY(30vh); }
+      100% { transform: translateX(-8px) translateY(120vh); }
+    }
+
+    @media (max-width:520px) {
+      h1 { font-size: 22px; }
+      .card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="app">
+    <div id="screen1">
+      <h1>sorry na po babe please</h1>
+      <p class="lead">I miss youu babe sorry na po bati na tayo.</p>
+      <div class="stage" id="stage">
+        <div class="btn-row">
+          <button class="btn yes" id="yesBtn">Yes 💕</button>
+          <button class="btn no" id="noBtn"><span>No</span><span class="icon">😔</span></button>
+        </div>
+        <div class="emoji">💌</div>
+      </div>
+      <p class="hint">hindi pwede mag no</p>
+    </div>
+
+    <div id="screen2" style="display:none">
+      <h1>yehey bati na tayo babe ha</h1>
+      <p class="lead">I wrote a short letter. Please read — then tap Play so you can hear my voice.</p>
+      <div class="letter" id="letterText">
+I just want to say I’m sorry not just in words, but from the bottom of my heart.
+I know I’ve said or done things that hurt you, even if I didn’t mean to. And the truth is, it hurts me too knowing I made you feel that way.
+
+I may act tough sometimes, but it’s not because I don’t care. I just don’t always know how to express what I really feel.
+But right now, I’m setting all that aside because you’re someone I never want to lose.
+
+Please forgive me.
+I may not be perfect, but I’ll do my best to be better for you.
+      </div>
+
+      <div class="controls">
+        <button class="btn yes" id="playBtn">Play 🎧</button>
+      </div>
+
+      <audio id="voiceAudio" src="voice.mp3" preload="auto"></audio>
+    </div>
+  </div>
+
+  <script>
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const stage = document.getElementById('stage');
+    const screen1 = document.getElementById('screen1');
+    const screen2 = document.getElementById('screen2');
+    const playBtn = document.getElementById('playBtn');
+    const voiceAudio = document.getElementById('voiceAudio');
+
+    function moveNoButtonRandomly(){
+      const pad = 12;
+      const stageRect = stage.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const maxX = stageRect.width - btnRect.width - pad;
+      const maxY = stageRect.height - btnRect.height - pad;
+      const x = Math.max(pad, Math.floor(Math.random() * maxX));
+      const y = Math.max(pad, Math.floor(Math.random() * maxY));
+      noBtn.style.transform = `translate(${x - stageRect.width/2 + btnRect.width/2}px, ${y - stageRect.height/2 + btnRect.height/2}px)`;
+    }
+
+    yesBtn.addEventListener('click', ()=>{
+      screen1.style.display = 'none';
+      screen2.style.display = 'block';
+      document.getElementById('app').scrollIntoView({behavior:'smooth'});
+    });
+
+    noBtn.addEventListener('mouseenter', moveNoButtonRandomly);
+    noBtn.addEventListener('mousemove', moveNoButtonRandomly);
+    noBtn.addEventListener('focus', moveNoButtonRandomly);
+
+    noBtn.addEventListener('click', ()=>{
+      alert('Okay, hint: try pressing "Yes" — I mean it from the bottom of my heart.');
+    });
+
+    playBtn.addEventListener('click', async ()=>{
+      try {
+        await voiceAudio.play();
+      } catch (err) {
+        alert('Could not play audio. Make sure "voice.mp3" is next to this HTML file.');
+      }
+    });
+
+    window.addEventListener('resize', ()=>{
+      noBtn.style.transition = 'none';
+      noBtn.style.transform = 'translateX(-50%)';
+    });
+  </script>
+</body>
+</html>
